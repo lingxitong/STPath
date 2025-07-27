@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-from .utils import *
 
 
 def RegressionHead(
@@ -24,7 +23,6 @@ def RegressionHead(
         nn.LayerNorm(hidden_dim),
         nn.Linear(hidden_dim, output_dim),
     )
-
 
 
 def batched_index_select(values, indices, dim = 1):
