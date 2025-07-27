@@ -128,6 +128,7 @@ class STPathInference:
             gene_names = save_gene_names
         else:
             gene_names = self.tokenizer.ge_tokenizer.get_available_genes()  # all 38984 genes
+            pred = pred[:, 2:]  # remove the pad and mask tokens
 
         adata = ad.AnnData(X=pred)
         adata.obsm['coordinates'] = coords.cpu().numpy()
@@ -184,43 +185,44 @@ if __name__ == "__main__":
         img_features=embeddings, 
         organ_type="Kidney", 
         tech_type="Visium",
-        save_gene_names=hvg_list
+        # save_gene_names=hvg_list
+        save_gene_names=None
     )
     # save adata
     # pred_adata.write_h5ad(f"/home/ti.huang/STPath/example_data/pred_{sample_id}.h5ad")
 
-    all_pearson_list = []
-    gt = np.log1p(adata[:, hvg_list].X.toarray())  # sparse -> dense
-    pred = pred_adata.X
-    for i in range(len(hvg_list)):
-        pearson_corr, _ = pearsonr(gt[:, i], pred[:, i])
-        all_pearson_list.append(pearson_corr.item())
-    print(f"Pearson correlation for {sample_id}: {np.mean(all_pearson_list)}")
+    # all_pearson_list = []
+    # gt = np.log1p(adata[:, hvg_list].X.toarray())  # sparse -> dense
+    # pred = pred_adata.X
+    # for i in range(len(hvg_list)):
+    #     pearson_corr, _ = pearsonr(gt[:, i], pred[:, i])
+    #     all_pearson_list.append(pearson_corr.item())
+    # print(f"Pearson correlation for {sample_id}: {np.mean(all_pearson_list)}")
 
-    """Performing Prediction with Context"""
-    rightest_coord = np.where(coords[:, 0] == coords[:, 0].max())[0][0]
-    masked_ids = PatchSampler.sample_nearest_patch(coords, int(len(coords) * 0.95), rightest_coord)
-    context_ids = np.setdiff1d(np.arange(len(coords)), masked_ids)  # the index not in masked_ids will be used as context
-    context_gene_exps = adata.X.toarray()[context_ids]
-    context_gene_names = adata.var_names.tolist()
+    # """Performing Prediction with Context"""
+    # rightest_coord = np.where(coords[:, 0] == coords[:, 0].max())[0][0]
+    # masked_ids = PatchSampler.sample_nearest_patch(coords, int(len(coords) * 0.95), rightest_coord)
+    # context_ids = np.setdiff1d(np.arange(len(coords)), masked_ids)  # the index not in masked_ids will be used as context
+    # context_gene_exps = adata.X.toarray()[context_ids]
+    # context_gene_names = adata.var_names.tolist()
     
-    pred_adata = agent.inference(
-        coords=adata.obsm['spatial'], 
-        img_features=embeddings, 
-        context_ids=context_ids, 
-        context_gene_exps=context_gene_exps, 
-        context_gene_names=context_gene_names, 
-        organ_type="Kidney", 
-        tech_type="Visium", 
-        save_gene_names=hvg_list,
-    )
-    # save adata
-    # pred_adata.write_h5ad(f"/home/ti.huang/STPath/example_data/pred_{sample_id}_context.h5ad")
+    # pred_adata = agent.inference(
+    #     coords=adata.obsm['spatial'], 
+    #     img_features=embeddings, 
+    #     context_ids=context_ids, 
+    #     context_gene_exps=context_gene_exps, 
+    #     context_gene_names=context_gene_names, 
+    #     organ_type="Kidney", 
+    #     tech_type="Visium", 
+    #     save_gene_names=hvg_list,
+    # )
+    # # save adata
+    # # pred_adata.write_h5ad(f"/home/ti.huang/STPath/example_data/pred_{sample_id}_context.h5ad")
 
-    all_pearson_list = []
-    gt = np.log1p(adata[:, hvg_list].X.toarray())[masked_ids, :]  # sparse -> dense
-    pred = pred_adata.X[masked_ids, :]
-    for i in range(len(hvg_list)):
-        pearson_corr, _ = pearsonr(gt[:, i], pred[:, i])
-        all_pearson_list.append(pearson_corr.item())
-    print(f"Pearson correlation for {sample_id}: {np.mean(all_pearson_list)}")
+    # all_pearson_list = []
+    # gt = np.log1p(adata[:, hvg_list].X.toarray())[masked_ids, :]  # sparse -> dense
+    # pred = pred_adata.X[masked_ids, :]
+    # for i in range(len(hvg_list)):
+    #     pearson_corr, _ = pearsonr(gt[:, i], pred[:, i])
+    #     all_pearson_list.append(pearson_corr.item())
+    # print(f"Pearson correlation for {sample_id}: {np.mean(all_pearson_list)}")

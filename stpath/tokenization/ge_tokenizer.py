@@ -6,7 +6,10 @@ import scanpy as sc
 
 import torch
 import torch.nn.functional as F
-from torch_geometric.utils import coalesce
+try:
+    from torch_geometric.utils import coalesce
+except ImportError:
+    print("torch_geometric is not installed.")
 
 from stpath.utils import create_row_index_tensor
 from stpath.tokenization.tokenizer_base import TokenizerBase
@@ -31,9 +34,7 @@ class GeneExpTokenizer(TokenizerBase):
 
     def get_available_genes(self):
         # rank the genes by their id
-        all_genes = sorted(self.gene2id.keys(), key=lambda x: self.gene2id[x])
-        # remove pad and mask token
-        return all_genes[2:]
+        return sorted(self.gene2id.keys(), key=lambda x: self.gene2id[x])
 
     def convert_gene_exp_to_one_hot_tensor(self, n_genes, gene_exp, gene_ids):
         # gene_exp: [N_cells, N_genes], gene_ids: [N_genes]
@@ -83,7 +84,9 @@ class GeneExpTokenizer(TokenizerBase):
         adata = adata[:, gene_list]
 
         if not isinstance(adata.X, np.ndarray):
-            row = create_row_index_tensor(adata.X)
+            # row = create_row_index_tensor(adata.X)
+            counts_per_row = np.diff(adata.X.indptr)
+            row = np.repeat(np.arange(adata.X.shape[0]), counts_per_row)  # create row indices for the sparse matrix
             col = adata.X.indices
             act_gene_exp = adata.X.data  # nonzero values
         else:

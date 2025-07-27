@@ -235,8 +235,7 @@ class STDataset(Dataset):
 
     def generate_masked_ge_tokens(self, n_spots):
         mask_token = self.tokenizer.ge_tokenizer.mask_token.float()
-        mask_token.repeat(n_spots, 1)
-        return mask_token
+        return mask_token.repeat(n_spots, 1)
 
     def generate_pad_tech_tokens(self, n_spots):
         return torch.tensor([self.tokenizer.tech_tokenizer.pad_token_id] * n_spots, dtype=torch.long)
