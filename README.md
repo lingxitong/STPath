@@ -161,6 +161,7 @@ print(f"Pearson correlation for {sample_id}: {np.mean(all_pearson_list)}")  # 0.
 * Dataset preprocessing pipeline [x]
 * Upload pretrained weight [x]
 * Training pipeline [x]
+* Tutorial for inference
 * Evaluation pipeline
     * Gene expression prediction [x]
     * Imputation [x]
